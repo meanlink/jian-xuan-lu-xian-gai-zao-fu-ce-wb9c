@@ -60,6 +60,7 @@ def analyze(records, params):
     rows = [{**r, "before": round(r["before"], 3), "after": round(r["after"], 3), "difference": round(r["difference"], 3), "review": "缩短" if r["difference"] > 0 else "需走查"} for r in sorted(clean, key=lambda r: r["difference"])]
     teams = sorted(set(r["team"] for r in clean))
     return {"summary": f"{n} 人完整配对，平均节省 {mean:.3f} 秒；{confidence*100:g}% 区间 [{low:.3f}, {high:.3f}] 秒。",
+            "ci_lower": round(low, 5), "ci_upper": round(high, 5),
             "metrics": [{"label": "平均节省", "value": round(mean, 5), "unit": "秒"}, {"label": "配对 p 值", "value": float(f"{p:.6g}")}, {"label": "配对效应 dz", "value": round(mean / sd, 5)}, {"label": "需走查人员", "value": int(sum(diffs <= 0)), "unit": "人"}],
             "table": {"columns": [{"key": "operator", "label": "匿名人员"}, {"key": "team", "label": "小组"}, {"key": "before", "label": "原路线/秒"}, {"key": "after", "label": "新路线/秒"}, {"key": "difference", "label": "节省/秒"}, {"key": "review", "label": "复测建议"}], "rows": rows},
             "chart": {"type": "bar", "labels": teams, "series": [{"name": "平均节省秒数", "values": [round(float(np.mean([r["difference"] for r in clean if r["team"] == x])), 4) for x in teams]}]},
